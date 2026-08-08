@@ -622,10 +622,37 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
 
-                    showSuccessPopup();
+                    /*-----------------------------------------------
+                        MOBILE KEYBOARD FIX
+                        Remove focus BEFORE opening popup so the
+                        mobile keyboard does not reopen automatically.
+                    -----------------------------------------------*/
+
+                    if (document.activeElement) {
+
+                        document.activeElement.blur();
+
+                    }
 
 
                     form.reset();
+
+
+                    /* Small delay makes the blur reliable on
+                       Android/iPhone browsers after submit. */
+
+                    setTimeout(function () {
+
+                        if (document.activeElement) {
+
+                            document.activeElement.blur();
+
+                        }
+
+                    }, 50);
+
+
+                    showSuccessPopup();
 
                 }
             );
@@ -667,6 +694,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function showSuccessPopup() {
+
+        /* Never keep an input/textarea focused behind the popup. */
+        if (document.activeElement) {
+
+            document.activeElement.blur();
+
+        }
 
         if (popup) {
 
