@@ -623,42 +623,67 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                     /*-----------------------------------------------
-                        MOBILE KEYBOARD FIX
-                        Remove focus BEFORE opening popup so the
-                        mobile keyboard does not reopen automatically.
+                        MOBILE KEYBOARD FORCE HIDE
                     -----------------------------------------------*/
 
-                    if (document.activeElement) {
-
-                        document.activeElement.blur();
-
-                    }
-
+                    hideMobileKeyboard();
 
                     form.reset();
 
-
-                    /* Small delay makes the blur reliable on
-                       Android/iPhone browsers after submit. */
-
+                    /* Give Android Chrome time to close the IME
+                       before showing the success popup. */
                     setTimeout(function () {
 
-                        if (document.activeElement) {
+                        hideMobileKeyboard();
+                        showSuccessPopup();
 
-                            document.activeElement.blur();
-
-                        }
-
-                    }, 50);
-
-
-                    showSuccessPopup();
+                    }, 180);
 
                 }
             );
 
         }
     );
+
+
+    /*=====================================================
+                    MOBILE KEYBOARD FORCE HIDE
+    =====================================================*/
+
+    function hideMobileKeyboard() {
+
+        const active = document.activeElement;
+
+        /* First remove focus from the field that opened the IME. */
+        if (active && typeof active.blur === "function") {
+            active.blur();
+        }
+
+        /* Chrome/Android Virtual Keyboard API. */
+        if (
+            navigator.virtualKeyboard &&
+            typeof navigator.virtualKeyboard.hide === "function"
+        ) {
+            try {
+                navigator.virtualKeyboard.hide();
+            } catch (error) {
+                console.log("Virtual keyboard hide:", error);
+            }
+        }
+
+        /* Remove focus from any input/textarea that may still
+           hold focus after the submit event. */
+        document.querySelectorAll(
+            "input, textarea, select, button"
+        ).forEach(function (element) {
+
+            if (document.activeElement === element) {
+                element.blur();
+            }
+
+        });
+
+    }
 
 
     /*=====================================================
@@ -695,12 +720,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function showSuccessPopup() {
 
-        /* Never keep an input/textarea focused behind the popup. */
-        if (document.activeElement) {
-
-            document.activeElement.blur();
-
-        }
+        hideMobileKeyboard();
 
         if (popup) {
 
@@ -1530,37 +1550,6 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 });
-
-// =========================================
-// CONTACT FORM POPUP
-// =========================================
-
-const contactForm = document.getElementById("contactForm");
-
-if (contactForm) {
-
-    contactForm.addEventListener("submit", function (e) {
-
-        e.preventDefault();
-
-        // Get popup
-        const popup = document.getElementById("popup");
-
-        if (popup) {
-
-            popup.classList.add("show");
-
-            popup.style.display = "flex";
-
-        }
-
-        // Reset form
-        contactForm.reset();
-
-    });
-
-}
-
 
 // =========================================
 // CLOSE POPUP
